@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Navigation</title>
+    <link rel="icon" href="location3.png" type="image/x-icon">
+	<link rel="manifest" href="manifest.json">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+    <style>
+        /* General page styling */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            background-image: url('images/bg14.jpg'); /* Background image */
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-position: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Style for destination cards */
+        .destination-card {
+            transition: transform 0.3s, box-shadow 0.3s;
+            height: 4%;
+            color: white;
+           
+			
+        }
+        .destination-card.card-img-top {
+            transition: transform 0.3s, box-shadow 0.3s;
+            height: 4%;
+            color: white;
+			
+        }
+        .destination-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Map styling */
+        #map {
+            height: 500px;
+            margin-top: 20px;
+        }
+ /* Map and Side Panel */
+        #map-container {
+            display: flex;
+            height: 80vh;
+        }
+        #map {
+            flex-grow: 1;
+            height: 100%;
+        }
+        .text-center {
+            color:white;
+            font-weight: bold;
+            
+        }
+        #directions-panel {
+            width: 320px;
+            background: white;
+            padding: 15px;
+            overflow-y: auto;
+            display: none;
+            border-left: 3px solid #007bff;
+            transition: 0.3s;
+        }
+        #directions-panel.show {
+            display: block;
+        }
+
+        /* Fancy Directions Style */
+        .direction-step {
+            padding: 10px;
+            margin: 5px 0;
+            background: #e9ecef;
+            border-left: 5px solid #007bff;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .direction-step span {
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        /* Button Styles */
+        .btn-toggle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+        }
+		#loader {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        #loader img {
+            width: 100px;
+		}
+    </style>
+</head>
+<body onload="setTimeout(() => document.getElementById('loader').style.display='none', 2000)">
+    <div id="loader">
+        <img src="crane.gif" alt="Loading...">
+    </div>
+
+<!-- Navigation Bar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="#">
+            <img src="location2.png" alt="Logo" width="30" height="30" class="d-inline-block align-top">
+            Campus Navigation
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="#home">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="#destinations">Gallery</a></li>
+                <li class="nav-item"><a class="nav-link" href="#navigation-map">Navigate</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<header id="home" class="bg-primary text-white text-center py-5">
+    <h1>Welcome to the Campus Navigation System</h1>
+    <p>Find your way easily around campus with our offline navigation system.</p>
+</header>
+
+<!-- Gallery Section -->
+<div class="container mt-5" id="destinations">
+    <h2 class="text-center mb-4">Explore Our Destinations </h2>
+    <div class="row">
+        <!-- Destination Cards -->
+        <div class="col-md-4 mb-4">
+            <div class="card destination-card">
+                <img src="images/gate.jpg" class="card-img-top" alt="Gate">
+                <div class="card-body">
+                    <h5 class="card-title">Main Gate</h5>
+                    <p class="card-text">The main entrance to the campus, welcoming students and visitors.</p>
+                    <a href="images/gate.jpg" class="btn btn-primary" target="_blank">View Image</a>
+                    <button class="btn btn-success" onclick="navigateToMap('Gate')">Navigate</button>
+                </div>
+            </div>
+        </div>
+
+		<div class="col-md-4 mb-4">
+            <div class="card destination-card">
+                <img src="images/Parking Lot.JPG" class="card-img-top" alt="Parking Lot">
+                <div class="card-body">
+                    <h5 class="card-title">Parking Lot</h5>
+                    <p class="card-text">Ample parking space for visitors and students.</p>
+                    <a href="images/Parking Lot.JPG" class="btn btn-primary" target="_blank">View Image</a>
+                    <button class="btn btn-success" onclick="navigateToMap('Parking Lot')">Navigate</button>
+                </div>
+            </div>
+        </div>
+
+		<div class="col-md-4 mb-4">
+            <div class="card destination-card">
+                <img src="images/Admin Block.JPG" class="card-img-top" alt="Admin Block">
+                <div class="card-body">
+                    <h5 class="card-title">Admin Block</h5>
+                    <p class="card-text">Ample parking space for visitors and students.</p>
+                    <a href="images/Admin Block.JPG" class="btn btn-primary" target="_blank">View Image</a>
+                    <button class="btn btn-success" onclick="navigateToMap('Admin Block')">Navigate</button>
+                </div>
+            </div>
+        </div>
+
+		<div class="col-md-4 mb-4">
+            <div class="card destination-card">
+                <img src="images/Staffroom.JPG" class="card-img-top" alt="Staffroom">
+                <div class="card-body">
+                    <h5 class="card-title">Staffroom</h5>
+                    <p class="card-text">Lecturers' offices.</p>
+                    <a href="images/Staffroom.JPG" class="btn btn-primary" target="_blank">View Image</a>
+                    <button class="btn btn-success" onclick="navigateToMap('Staffroom')">Navigate</button>
+                </div>
+            </div>
+        </div>
+
+		<div class="col-md-4 mb-4">
+            <div class="card destination-card">
+                <img src="images/Tuition Block.JPG" class="card-img-top" alt="Tuition Block">
+                <div class="card-body">
+                    <h5 class="card-title">Tuition Block</h5>
+                    <p class="card-text">Spacious and well furnished students classes.</p>
+                    <a href="images/Tuition Block.JPG" class="btn btn-primary" target="_blank">View Image</a>
+                    <button class="btn btn-success" onclick="navigateToMap('Tuition Block')">Navigate</button>
+                </div>
+            </div>
+        </div>
+
+		<div class="col-md-4 mb-4">
+            <div class="card destination-card">
+                <img src="images/Laboratories.JPG" class="card-img-top" alt="Laboratories">
+                <div class="card-body">
+                    <h5 class="card-title">Laboratories</h5>
+                    <p class="card-text">Well equiped Survey, Cartography, Photogrammetry and Remote Sensing Labs.</p>
+                    <a href="images/Laboratories.JPG" class="btn btn-primary" target="_blank">View Image</a>
+                    <button class="btn btn-success" onclick="navigateToMap('Laboratories')">Navigate</button>
+                </div>
+            </div>
+        </div>
+
+		<div class="col-md-4 mb-4">
+            <div class="card destination-card">
+                <img src="images/Male Hostel.JPG" class="card-img-top" alt="Male Hostel">
+                <div class="card-body">
+                    <h5 class="card-title">Male Hostel</h5>
+                    <p class="card-text">Spacious, well furnished Male Hostels with WiFi connection.</p>
+                    <a href="images/Male Hostel.JPG" class="btn btn-primary" target="_blank">View Image</a>
+                    <button class="btn btn-success" onclick="navigateToMap('Male Hostel')">Navigate</button>
+                </div>
+            </div>
+        </div>
+
+		<div class="col-md-4 mb-4">
+            <div class="card destination-card">
+                <img src="images/Female Hostel.JPG" class="card-img-top" alt="Female Hostel">
+                <div class="card-body">
+                    <h5 class="card-title">Female Hostel</h5>
+                    <p class="card-text">Spacious, well furnished Female Hostels with WiFi connection.</p>
+                    <a href="images/Female Hostel.JPG" class="btn btn-primary" target="_blank">View Image</a>
+                    <button class="btn btn-success" onclick="navigateToMap('Female Hostel')">Navigate</button>
+                </div>
+            </div>
+        </div>
+
+		<div class="col-md-4 mb-4">
+            <div class="card destination-card">
+                <img src="images/Cafeteria.JPG" class="card-img-top" alt="Cafeteria">
+                <div class="card-body">
+                    <h5 class="card-title">Cafeteria</h5>
+                    <p class="card-text">Main Dining area for students serving a variety of Fresh Delicacies.</p>
+                    <a href="images/Cafeteria.JPG" class="btn btn-primary" target="_blank">View Image</a>
+                    <button class="btn btn-success" onclick="navigateToMap('Cafeteria')">Navigate</button>
+                </div>
+            </div>
+        </div>
+
+		
+		<div class="col-md-4 mb-4">
+            <div class="card destination-card">
+                <img src="images/Mosque.JPG" class="card-img-top" alt="Mosque">
+                <div class="card-body">
+                    <h5 class="card-title">Mosque</h5>
+                    <p class="card-text">Prayer Room for Muslim Students and Staff</p>
+                    <a href="images/Mosque.JPG" class="btn btn-primary" target="_blank">View Image</a>
+                    <button class="btn btn-success" onclick="navigateToMap('Mosque')">Navigate</button>
+                </div>
+            </div>
+        </div>
+
+		<div class="col-md-4 mb-4">
+            <div class="card destination-card">
+                <img src="images/Ablution Block.JPG" class="card-img-top" alt="Ablution Block">
+                <div class="card-body">
+                    <h5 class="card-title">Ablution Block</h5>
+                    <p class="card-text">Dedicated sparkling clean washrooms for visitors</p>
+                    <a href="images/Ablution Block.JPG" class="btn btn-primary" target="_blank">View Image</a>
+                    <button class="btn btn-success" onclick="navigateToMap('Ablution Block')">Navigate</button>
+                </div>
+            </div>
+        </div>
+
+		<div class="col-md-4 mb-4">
+            <div class="card destination-card">
+                <img src="images/L_Block.JPG" class="card-img-top" alt="L_Block">
+                <div class="card-body">
+                    <h5 class="card-title">L_Block Block</h5>
+                    <p class="card-text">Additional classroom area for students serving as a auditorium.</p>
+                    <a href="images/L_Block.JPG" class="btn btn-primary" target="_blank">View Image</a>
+                    <button class="btn btn-success" onclick="navigateToMap('L_Block')">Navigate</button>
+                </div>
+            </div>
+        </div>
+
+		<div class="col-md-4 mb-4">
+            <div class="card destination-card">
+                <img src="images/Library.JPG" class="card-img-top" alt="Library">
+                <div class="card-body">
+                    <h5 class="card-title">Library</h5>
+                    <p class="card-text">Information resource centre for students and staff well furnished with WiFi connectivity.</p>
+                    <a href="images/Library.JPG" class="btn btn-primary" target="_blank">View Image</a>
+                    <button class="btn btn-success" onclick="navigateToMap('Library')">Navigate</button>
+                </div>
+            </div>
+        </div>
+
+		<div class="col-md-4 mb-4">
+            <div class="card destination-card">
+                <img src="images/NTC.jpg" class="card-img-top" alt="NTC">
+                <div class="card-body">
+                    <h5 class="card-title">NTC</h5>
+                    <p class="card-text">The National Titling Center that serves the nationwide role of printing Lands Title Deeds.</p>
+                    <a href="images/NTC.jpg" class="btn btn-primary" target="_blank">View Image</a>
+                    <button class="btn btn-success" onclick="navigateToMap('NTC')">Navigate</button>
+                </div>
+            </div>
+        </div>
+        <!-- Add more destinations similarly -->
+    </div>
+</div>
+
+<!-- Navigation Map Section -->
+<div class="container mt-5" id="navigation-map">
+    <h2 class="text-center">Navigation Map</h2>
+
+    <!-- Dropdown for Start Destination -->
+    <div class="mb-3">
+        <label for="start-destination" class="form-label">Start Destination:</label>
+        <select class="form-select" id="start-destination">
+            <option value="Gate">Gate</option>
+            <option value="Parking Lot">Parking Lot</option>
+            <option value="Library">Library</option>
+            <option value="Admin Block">Admin Block</option>
+            <option value="Ablution Block">Ablution Block</option>
+            <option value="Mosque">Mosque</option>
+            <option value="Cafeteria">Cafeteria</option>
+            <option value="NTC">NTC</option>
+            <option value="Female Hostel">Female Hostel</option>
+            <option value="Male Hostel">Male Hostel</option>
+            <option value="Staffroom">Staffroom</option>
+            <option value="Tuition Block">Tuition Block</option>
+            <option value="L_Block">L_Block</option>
+            <option value="Laboratories">Laboratories</option>
+            <option value="Library">Library</option>
+        </select>
+    </div>
+
+    <!-- Dropdown for End Destination -->
+    <div class="mb-3">
+        <label for="end-destination" class="form-label">End Destination:</label>
+        <select class="form-select" id="end-destination">
+            <option value="Gate">Gate</option>
+            <option value="Parking Lot">Parking Lot</option>
+            <option value="Admin Block">Admin Block</option>
+            <option value="Ablution Block">Ablution Block</option>
+            <option value="Mosque">Mosque</option>
+            <option value="Cafeteria">Cafeteria</option>
+            <option value="NTC">NTC</option>
+            <option value="Female Hostel">Female Hostel</option>
+            <option value="Male Hostel">Male Hostel</option>
+            <option value="Staffroom">Staffroom</option>
+            <option value="Tuition Block">Tuition Block</option>
+            <option value="L_Block">L_Block</option>
+            <option value="Laboratories">Laboratories</option>
+            <option value="Library">Library</option>
+        </select>
+    </div>
+
+ <div class="d-flex justify-content-center mt-3">
+            <button class="btn btn-success me-2" onclick="simulateRoute()">Navigate</button>
+            <button class="btn btn-danger me-2" onclick="resetMap()">Reset</button>
+            <button class="btn btn-info" onclick="getMyLocation()">My Location</button>
+</div>
+    
+<!-- Map Container -->
+        <div id="map-container" class="mt-3">
+            <div id="map"></div>
+            <div id="directions-panel">
+                <h4>Turn-by-Turn Directions</h4>
+                <p><strong>Distance:</strong> <span id="total-distance">0m</span></p>
+                <p><strong>Estimated Time:</strong> <span id="estimated-time">0 min</span></p>
+                <div id="directions-list"></div>
+            </div>
+         </div>
+</div>
+
+    <div class="form-check mt-3">
+        <input class="form-check-input" type="checkbox" id="toggle-satellite" onclick="toggleSatelliteView()">
+        <label class="form-check-label" for="toggle-satellite">Satellite View</label>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer class="bg-dark text-white text-center py-3 mt-4">
+    <p>&copy; 2025 Campus Navigation. All rights reserved.</p>
+</footer>
+
+<!-- JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+    // Initialize the map
+    let map = L.map('map').setView([-1.249953957, 36.85741191], 18);
+    let routeLayer, movingMarker, totalDistance = 0;
+
+    // Map Layers
+    const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    const satelliteLayer = L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+        subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+        maxZoom: 20
+    });
+
+    // Toggle Satellite View
+    function toggleSatelliteView() {
+        if (document.getElementById("toggle-satellite").checked) {
+            map.removeLayer(streetLayer);
+            map.addLayer(satelliteLayer);
+        } else {
+            map.removeLayer(satelliteLayer);
+            map.addLayer(streetLayer);
+        }
+    }
+
+    // Navigate to the map and pre-fill start destination
+    function navigateToMap(startLocation) {
+        document.getElementById("start-destination").value = startLocation;
+        document.getElementById("navigation-map").scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Define routes here (THIS IS WHERE YOU ADD MORE ROUTES)
+    const routes = {
+        "Gate-L_Block": [
+            [-1.249941085, 36.8573594], [-1.249915699, 36.85711636], [-1.249890762, 36.85694738],[-1.249902576, 36.85694516], [-1.249953074, 36.85698886], [-1.25000222, 36.85698632],
+            [-1.250050032, 36.85694546], [-1.250070647, 36.85695639], [-1.25026953, 36.85693328],[-1.25049501, 36.85690142], [-1.250440947, 36.85678385], [-1.250422938, 36.85665562], [-1.250395398, 36.85644137], [-1.250381372, 36.85632406], [-1.250378564, 36.85623129],
+            [-1.250504419, 36.85621207]
+        ],
+		"L_Block-Gate": [
+		    [-1.250504419, 36.85621207], [-1.250378564, 36.85623129], [-1.250381372, 36.85632406], [-1.250395398, 36.85644137],[-1.250422938, 36.85665562],
+            [-1.250440947, 36.85678385], [-1.25049501, 36.85690142], [-1.25026953, 36.85693328], [-1.250070647, 36.85695639],[-1.250050032, 36.85694546],
+            [-1.25000222, 36.85698632], [-1.249953074, 36.85698886], [-1.249902576, 36.85694516],[-1.249890762, 36.85694738],[-1.249915699, 36.85711636],
+            [-1.249941085, 36.8573594]
+	    ],
+        "Gate-Parking Lot": [	
+	    [-1.249941085, 36.8573594], [-1.249915699, 36.85711636], [-1.249890762, 36.85694738],
+	    [-1.249863099, 36.85695762]
+	],
+        "Parking Lot-Gate":[
+            [-1.249863099, 36.85695762], [-1.249890762, 36.85694738], [-1.249915699, 36.85711636],[-1.249941085, 36.8573594]
+        ],
+        "Gate-Mosque": [	
+	    [-1.249941085, 36.8573594], [-1.249915699, 36.85711636],[-1.249891552, 36.85693745],
+	    [-1.249776225, 36.85685613], [-1.249726837, 36.85693672], [-1.249713809, 36.85693076],[-1.249640065, 36.85687018]
+	],
+	    "Mosque-Gate": [
+		[-1.249640065, 36.85687018], [-1.249713809, 36.85693076], [-1.249726837, 36.85693672], [-1.249776225, 36.85685613], [-1.249891552, 36.85693745],
+        [-1.249915699, 36.85711636], [-1.249941085, 36.8573594]
+		], 
+        "Gate-Ablution Block":[	
+	    [-1.249941085, 36.8573594], [-1.249915699, 36.85711636], [-1.249891552, 36.85693745],
+	    [-1.249776225, 36.85685613], [-1.249726837, 36.85693672]
+        ],
+		"Ablution Block-Gate": [
+		[-1.249726837, 36.85693672], [-1.249776225, 36.85685613], [-1.249891552, 36.85693745], [-1.249915699, 36.85711636], [-1.249941085, 36.8573594]
+		],
+        "Gate-Admin Block":[	
+            [-1.249941085, 36.8573594], [-1.249915699, 36.85711636], [-1.249890762, 36.85694738], [-1.249902576, 36.85694516],
+	    [-1.249953074, 36.85698886], [-1.25000222, 36.85698632], [-1.250050032, 36.85694546]
+	],
+	    "Admin Block-Gate": [
+		[-1.250050032, 36.85694546], [-1.25000222, 36.85698632], [-1.249953074, 36.85698886], [-1.249902576, 36.85694516], [-1.249890762, 36.85694738], [-1.249915699, 36.85711636],
+        [-1.249941085, 36.8573594]
+		],
+        "Gate-NTC":[	
+	    [-1.249941085, 36.8573594], [-1.249915699, 36.85711636], [-1.249890762, 36.85694738], [-1.249902576, 36.85694516], [-1.249953074, 36.85698886], [-1.25000222, 36.85698632],
+	    [-1.250050032, 36.85694546], [-1.250070647, 36.85695639], [-1.25026953, 36.85693328],[-1.25049501, 36.85690142], [-1.250503236, 36.856905], [-1.250560576, 36.856903]
+        ],
+		"NTC-Gate": [
+		[-1.250560576, 36.856903], [-1.250503236, 36.856905], [-1.25049501, 36.85690142], [-1.25026953, 36.85693328], [-1.250070647, 36.85695639],
+        [-1.250050032, 36.85694546], [-1.25000222, 36.85698632], [-1.249953074, 36.85698886], [-1.249902576, 36.85694516],[-1.249890762, 36.85694738], [-1.249915699, 36.85711636],[-1.249941085, 36.8573594]
+		],
+"Gate-Library":[	
+		[-1.249941085, 36.8573594],[-1.249915699, 36.85711636],[-1.249890762, 36.85694738],[-1.249902576, 36.85694516],[-1.249953074, 36.85698886],[-1.25000222, 36.85698632],
+		[-1.250050032, 36.85694546],[-1.250070647, 36.85695639],[-1.25026953, 36.85693328],[-1.25049501, 36.85690142],[-1.250492368, 36.8568518],[-1.250485282, 36.85680121]
+		],
+		"Library-Gate": [
+		[-1.250485282, 36.85680121], [-1.250492368, 36.8568518], [-1.25049501, 36.85690142], [-1.25026953, 36.85693328], [-1.250070647, 36.85695639],
+        [-1.250050032, 36.85694546],[-1.25000222, 36.85698632],[-1.249953074, 36.85698886],[-1.249902576, 36.85694516],[-1.249890762, 36.85694738],[-1.249915699, 36.85711636],[-1.249941085, 36.8573594]
+		],
+"Gate-Female Hostel":[	
+		[-1.249941085, 36.8573594],[-1.249915699, 36.85711636],[-1.249890762, 36.85694738],[-1.249776225, 36.85685613],[-1.249769608, 36.85684745],[-1.24960593, 36.85672391],[-1.249521105, 36.85665994],
+		[-1.249519876, 36.85658809],[-1.249521106, 36.85647466]
+		],
+		"Female Hostel- Gate": [
+		[-1.249521106, 36.85647466],
+        [-1.249519876, 36.85658809],[-1.249521105, 36.85665994],[-1.24960593, 36.85672391],[-1.249769608, 36.85684745],[-1.249776225, 36.85685613],
+        [-1.249890762, 36.85694738],[-1.249915699, 36.85711636],[-1.249941085, 36.8573594]
+		],
+"Gate-Male Hostel":[	
+		[-1.249941085, 36.8573594],[-1.249915699, 36.85711636],[-1.249890762, 36.85694738],[-1.249897584, 36.85675615],[-1.249888974, 36.85670142],[-1.24986271, 36.85666085],
+		[-1.24984356, 36.85664171],[-1.249805607, 36.85662696],[-1.249802088, 36.85661535],[-1.249783493, 36.85657735],[-1.249772363, 36.85654784],
+		[-1.249753743, 36.85649033],[-1.249735364, 36.85645211],[-1.249729983, 36.85644257]
+		],
+		"Male Hostel-Gate": [
+		[-1.249729983, 36.85644257],[-1.249735364, 36.85645211],[-1.249753743, 36.85649033],[-1.249772363, 36.85654784],[-1.249783493, 36.85657735],[-1.249802088, 36.85661535],[-1.249805607, 36.85662696],
+        [-1.24984356, 36.85664171],[-1.24986271, 36.85666085],[-1.249888974, 36.85670142],[-1.249897584, 36.85675615],[-1.249890762, 36.85694738],
+        [-1.249915699, 36.85711636],[-1.249941085, 36.8573594]
+		],
+"Gate-Staffroom":[	
+		[-1.249941085, 36.8573594],[-1.249915699, 36.85711636],[-1.249890762, 36.85694738],[-1.249910941, 36.85693842],[-1.249887836, 36.85683159],
+		[-1.249894574, 36.85677222],[-1.249928258, 36.85673595],[-1.249966539, 36.8567117]
+		],
+		"Staffroom-Gate": [
+		[-1.249966539, 36.8567117],[-1.249928258, 36.85673595],[-1.249894574, 36.85677222],[-1.249887836, 36.85683159],[-1.249910941, 36.85693842],
+        [-1.249890762, 36.85694738],[-1.249915699, 36.85711636],[-1.249941085, 36.8573594]
+		],
+"Gate-Tuition Block":[	
+		[-1.249941085, 36.8573594],[-1.249915699, 36.85711636],[-1.249890762, 36.85694738],[-1.249910941, 36.85693842],
+		[-1.249887836, 36.85683159],[-1.249894574, 36.85677222],[-1.249928258, 36.85673595],[-1.249966539, 36.8567117]
+		],
+		"Tuition Block-Gate": [
+
+        [-1.249966539, 36.8567117],[-1.249928258, 36.85673595],[-1.249894574, 36.85677222],[-1.249887836, 36.85683159],[-1.249910941, 36.85693842],
+        [-1.249890762, 36.85694738],[-1.249915699, 36.85711636],[-1.249941085, 36.8573594]
+		],
+"L_Block-Laboratories":[	
+		[-1.250504419, 36.85621207],[-1.250499737, 36.8562035],[-1.250349812, 36.85621384],[-1.250206963, 36.85622776],[-1.250132633, 36.85623657],
+		[-1.250133367, 36.85632535],[-1.250153362, 36.85638695]
+		],
+		"Laboratories-L_Block": [
+		[-1.250153362, 36.85638695],[-1.250133367, 36.85632535],[-1.250132633, 36.85623657],
+        [-1.250206963, 36.85622776],[-1.250349812, 36.85621384],[-1.250499737, 36.8562035],[-1.250504419, 36.85621207]
+		],
+"L_Block-Tuition Block":[	
+		[-1.250504419, 36.85621207],[-1.250499737, 36.8562035],
+		[-1.250349812, 36.85621384],[-1.250206963, 36.85622776],[-1.250132633, 36.85623657],[-1.250120382, 36.85623587],
+		[-1.250028345, 36.85624275],[-1.249948041, 36.85625915],[-1.249936226, 36.85629945],[-1.249945934, 36.85635176],[-1.249950914, 36.85639032]
+		],
+		"Tuition Block-L_Block": [
+		[-1.249950914, 36.85639032],[-1.249945934, 36.85635176],[-1.249936226, 36.85629945],[-1.249948041, 36.85625915],[-1.250028345, 36.85624275],
+        [-1.250120382, 36.85623587],[-1.250132633, 36.85623657],[-1.250206963, 36.85622776],[-1.250349812, 36.85621384],[-1.250499737, 36.8562035],[-1.250504419, 36.85621207]
+		],
+"L_Block-Staffroom":[	
+		[-1.250504419, 36.85621207],[-1.250378564, 36.85623129],[-1.250381372, 36.85632406],[-1.250395398, 36.85644137],[-1.250422938, 36.85665562],[-1.250440947, 36.85678385],
+	    [-1.250485282, 36.85680121],[-1.250492368, 36.8568518],[-1.25049501, 36.85690142],[-1.25026953, 36.85693328],[-1.250070647, 36.85695639],[-1.250050032, 36.85694546],
+		[-1.25000222, 36.85698632],[-1.249953074, 36.85698886],[-1.249910941, 36.85693842],[-1.249887836, 36.85683159],[-1.249894574, 36.85677222],
+		[-1.249928258, 36.85673595],[-1.249966539, 36.8567117]
+		],
+		"Staffroom-L_Block": [
+		[-1.249966539, 36.8567117],[-1.249928258, 36.85673595],[-1.249894574, 36.85677222],[-1.249887836, 36.85683159],[-1.249910941, 36.85693842],[-1.249953074, 36.85698886],
+        [-1.25000222, 36.85698632],[-1.250050032, 36.85694546],[-1.250070647, 36.85695639],[-1.25026953, 36.85693328],[-1.25049501, 36.85690142],[-1.250492368, 36.8568518],
+        [-1.250485282, 36.85680121],[-1.250440947, 36.85678385],[-1.250422938, 36.85665562],[-1.250395398, 36.85644137],[-1.250381372, 36.85632406],
+        [-1.250378564, 36.85623129],[-1.250504419, 36.85621207]
+		],
+"L_Block-Admin Block":[	
+		[-1.250504419, 36.85621207],[-1.250378564, 36.85623129],[-1.250381372, 36.85632406],[-1.250395398, 36.85644137],[-1.250422938, 36.85665562],[-1.250440947, 36.85678385],
+		[-1.250485282, 36.85680121],[-1.250492368, 36.8568518],[-1.25049501, 36.85690142],[-1.25026953, 36.85693328],[-1.250070647, 36.85695639]
+		],
+		"Admin Block-L_Block": [
+		[-1.250070647, 36.85695639],[-1.25026953, 36.85693328],[-1.25049501, 36.85690142],[-1.250492368, 36.8568518],[-1.250485282, 36.85680121],
+        [-1.250440947, 36.85678385],[-1.250422938, 36.85665562],[-1.250395398, 36.85644137],[-1.250381372, 36.85632406],[-1.250378564, 36.85623129],[-1.250504419, 36.85621207]
+		],
+"L_Block-Library":[	
+		[-1.250504419, 36.85621207],[-1.250378564, 36.85623129],[-1.250381372, 36.85632406],[-1.250395398, 36.85644137],
+		[-1.250422938, 36.85665562],[-1.250440947, 36.85678385],[-1.250485282, 36.85680121]
+		],
+		"Library-L_Block": [
+		[-1.250485282, 36.85680121],[-1.250440947, 36.85678385],[-1.250422938, 36.85665562],[-1.250395398, 36.85644137],[-1.250381372, 36.85632406],[-1.250378564, 36.85623129],
+        [-1.250504419, 36.85621207]
+		],
+"Male Hostel-Tuition Block":[	
+		[-1.249752377, 36.85643009],[-1.249786451, 36.85643121],[-1.249834315, 36.85642206],[-1.249885157, 36.85641848],[-1.249926771, 36.85641526]
+		],
+		"Tuition Block-Male Hostel": [
+		[-1.249926771, 36.85641526],[-1.249885157, 36.85641848],[-1.249834315, 36.85642206],[-1.249786451, 36.85643121],[-1.249752377, 36.85643009]
+		],
+"Female Hostel-Tuition Block":[
+		[-1.249538482, 36.85646253],[-1.249588307, 36.85645246],[-1.249670355, 36.85644595],[-1.249720337, 36.85642798],[-1.249752377, 36.85643009],[-1.249786451, 36.85643121],
+		[-1.249834315, 36.85642206],[-1.249885157, 36.85641848],[-1.249926771, 36.85641526]
+		],
+		"Tuition Block-Female Hostel": [
+
+        [-1.249926771, 36.85641526],[-1.249885157, 36.85641848],[-1.249834315, 36.85642206],[-1.249786451, 36.85643121],[-1.249752377, 36.85643009],
+        [-1.249720337, 36.85642798],[-1.249670355, 36.85644595],[-1.249588307, 36.85645246],[-1.249538482, 36.85646253]
+		],
+"L_BLock-Male Hostel":[	
+		[-1.250499737, 36.8562035],[-1.250349812, 36.85621384],[-1.250206963, 36.85622776],[-1.250132633, 36.85623657],[-1.250120382, 36.85623587],
+		[-1.250028345, 36.85624275],[-1.249948041, 36.85625915],[-1.249942432, 36.85626056],[-1.249884661, 36.85626456],[-1.249836819, 36.85626356],[-1.249795547, 36.8562624],
+		[-1.249787151, 36.8562626],[-1.249785069, 36.8562964],[-1.24979256, 36.856344],[-1.249796527, 36.85637184],[-1.249797531, 36.85638963],[-1.249798149, 36.8563953],
+		[-1.249799921, 36.85641442],[-1.249801411, 36.85641861]
+		],
+		"Male Hostel-L_Block": [
+
+        [-1.249801411, 36.85641861],[-1.249799921, 36.85641442],[-1.249798149, 36.8563953],[-1.249797531, 36.85638963],[-1.249796527, 36.85637184],
+        [-1.24979256, 36.856344],[-1.249785069, 36.8562964],[-1.249787151, 36.8562626],[-1.249795547, 36.8562624],[-1.249836819, 36.85626356],[-1.249884661, 36.85626456],
+        [-1.249942432, 36.85626056],[-1.249948041, 36.85625915],[-1.250028345, 36.85624275],[-1.250120382, 36.85623587],[-1.250132633, 36.85623657],
+        [-1.250206963, 36.85622776],[-1.250349812, 36.85621384],[-1.250499737, 36.8562035]
+		],
+"L_Block-Female Hostel":[	
+		[-1.250499737, 36.8562035],[-1.250349812, 36.85621384],[-1.250206963, 36.85622776],[-1.250132633, 36.85623657],[-1.250120382, 36.85623587],
+		[-1.250028345, 36.85624275],[-1.249948041, 36.85625915],[-1.249942432, 36.85626056],[-1.249884661, 36.85626456],[-1.249836819, 36.85626356],
+		[-1.249795547, 36.8562624],[-1.249787151, 36.8562626],[-1.249785069, 36.8562964],[-1.24979256, 36.856344],[-1.249796527, 36.85637184],[-1.249797531, 36.85638963],
+		[-1.249798149, 36.8563953],[-1.249799921, 36.85641442],[-1.249801411, 36.85641861],[-1.249720337, 36.85642798],[-1.249670355, 36.85644595],
+		[-1.249588307, 36.85645246],[-1.249538482, 36.85646253]
+		],
+		"Female Hostel-L_Block": [
+		[-1.249538482, 36.85646253],[-1.249588307, 36.85645246],[-1.249670355, 36.85644595],[-1.249720337, 36.85642798],[-1.249801411, 36.85641861],[-1.249799921, 36.85641442],[-1.249798149, 36.8563953],
+        [-1.249797531, 36.85638963],[-1.249796527, 36.85637184],[-1.24979256, 36.856344],[-1.249785069, 36.8562964],[-1.249787151, 36.8562626],[-1.249795547, 36.8562624],
+        [-1.249836819, 36.85626356],[-1.249884661, 36.85626456],[-1.249942432, 36.85626056],[-1.249948041, 36.85625915],[-1.250028345, 36.85624275],[-1.250120382, 36.85623587],
+        [-1.250132633, 36.85623657],[-1.250206963, 36.85622776],[-1.250349812, 36.85621384],[-1.250499737, 36.8562035]
+		],
+"Library-Male Hostel":[	
+		[-1.250440947, 36.85678385],[-1.250422938, 36.85665562],[-1.250395398, 36.85644137],[-1.250381372, 36.85632406],[-1.250378564, 36.85623129],
+		[-1.250349812, 36.85621384],[-1.250206963, 36.85622776],[-1.250132633, 36.85623657],[-1.250120382, 36.85623587],[-1.250028345, 36.85624275],[-1.249948041, 36.85625915],
+		[-1.249942432, 36.85626056],[-1.249884661, 36.85626456],[-1.249836819, 36.85626356],[-1.249795547, 36.8562624],[-1.249787151, 36.8562626],[-1.249785069, 36.8562964],
+        [-1.24979256, 36.856344],[-1.249796527, 36.85637184],[-1.249797531, 36.85638963],[-1.249798149, 36.8563953],[-1.249799921, 36.85641442],[-1.249801411, 36.85641861]
+	],
+		"Male Hostel-Library": [
+		[-1.249801411, 36.85641861],[-1.249799921, 36.85641442],[-1.249798149, 36.8563953],[-1.249797531, 36.85638963],[-1.249796527, 36.85637184],[-1.24979256, 36.856344],
+        [-1.249785069, 36.8562964],[-1.249787151, 36.8562626],[-1.249795547, 36.8562624],[-1.249836819, 36.85626356],[-1.249884661, 36.85626456],[-1.249942432, 36.85626056],
+        [-1.249948041, 36.85625915],[-1.250028345, 36.85624275],[-1.250120382, 36.85623587],[-1.250132633, 36.85623657],[-1.250206963, 36.85622776],
+        [-1.250349812, 36.85621384],[-1.250378564, 36.85623129],[-1.250381372, 36.85632406],[-1.250395398, 36.85644137],[-1.250422938, 36.85665562],[-1.250440947, 36.85678385]
+
+		],
+
+		"Library-Female Hostel":[	
+		[-1.250440947, 36.85678385],[-1.250422938, 36.85665562],[-1.250395398, 36.85644137],[-1.250381372, 36.85632406],[-1.250378564, 36.85623129],[-1.250349812, 36.85621384],
+		[-1.250206963, 36.85622776],[-1.250132633, 36.85623657],[-1.250120382, 36.85623587],[-1.250028345, 36.85624275],[-1.249948041, 36.85625915],[-1.249942432, 36.85626056],
+		[-1.249884661, 36.85626456],[-1.249836819, 36.85626356],[-1.249795547, 36.8562624],[-1.249787151, 36.8562626],[-1.249785069, 36.8562964],[-1.24979256, 36.856344],
+		[-1.249796527, 36.85637184],[-1.249797531, 36.85638963],[-1.249798149, 36.8563953],[-1.249799921, 36.85641442],[-1.249801411, 36.85641861],
+		[-1.249720337, 36.85642798],[-1.249670355, 36.85644595],[-1.249588307, 36.85645246],[-1.249538482, 36.85646253]
+		],
+
+		"Female Hostel-Library": [
+		[-1.249538482, 36.85646253],[-1.249588307, 36.85645246],[-1.249670355, 36.85644595],[-1.249720337, 36.85642798],[-1.249801411, 36.85641861],[-1.249799921, 36.85641442],
+        [-1.249798149, 36.8563953],[-1.249797531, 36.85638963],[-1.249796527, 36.85637184],[-1.24979256, 36.856344],[-1.249785069, 36.8562964],[-1.249787151, 36.8562626],
+        [-1.249795547, 36.8562624],[-1.249836819, 36.85626356],[-1.249884661, 36.85626456],[-1.249942432, 36.85626056],[-1.249948041, 36.85625915],
+        [-1.250028345, 36.85624275],[-1.250120382, 36.85623587],[-1.250132633, 36.85623657],[-1.250206963, 36.85622776],[-1.250349812, 36.85621384],
+        [-1.250378564, 36.85623129],[-1.250381372, 36.85632406],[-1.250395398, 36.85644137],[-1.250422938, 36.85665562],[-1.250440947, 36.85678385]
+		],
+"Mosque-Female Hostel":[	
+		[-1.249640065, 36.85687018],[-1.24960593, 36.85672391],[-1.249521105, 36.85665994],[-1.249519876, 36.85658809],[-1.249521106, 36.85647466]
+		],
+		"Female Hostel-Mosque": [
+		[-1.249521106, 36.85647466],[-1.249519876, 36.85658809],[-1.249521105, 36.85665994],[-1.24960593, 36.85672391],[-1.249640065, 36.85687018],
+		],
+"Mosque-Male Hostel":[	
+		[-1.249640065, 36.85687018],[-1.24960593, 36.85672391],[-1.249521105, 36.85665994],[-1.249519876, 36.85658809],[-1.249521106, 36.85647466],
+		[-1.249538482, 36.85646253],[-1.249588307, 36.85645246],[-1.249670355, 36.85644595],[-1.249720337, 36.85642798]
+		],
+		"Male Hostel-Mosque": [
+
+        [-1.249720337, 36.85642798],[-1.249670355, 36.85644595],[-1.249588307, 36.85645246],[-1.249538482, 36.85646253],[-1.249521106, 36.85647466],
+        [-1.249519876, 36.85658809],[-1.249521105, 36.85665994],[-1.24960593, 36.85672391],[-1.249640065, 36.85687018]
+		],
+"Ablution-NTC":[	
+		[-1.249713809, 36.85693076],[-1.249891552, 36.85693745],[-1.249902576, 36.85694516],[-1.249953074, 36.85698886],[-1.25000222, 36.85698632],
+		[-1.250050032, 36.85694546],[-1.250070647, 36.85695639],[-1.25026953, 36.85693328],[-1.25049501, 36.85690142],[-1.250503236, 36.856905],[-1.250560576, 36.856903]
+		],
+		"NTC-Ablution Block": [
+		[-1.250560576, 36.856903],[-1.250503236, 36.856905],[-1.25049501, 36.85690142],[-1.25026953, 36.85693328],[-1.250070647, 36.85695639],
+        [-1.250050032, 36.85694546],[-1.25000222, 36.85698632],[-1.249953074, 36.85698886],[-1.249902576, 36.85694516],[-1.249891552, 36.85693745],[-1.249713809, 36.85693076]
+		],
+"Admin Block-NTC":[	
+		[-1.250070647, 36.85695639],[-1.25026953, 36.85693328],[-1.25049501, 36.85690142],[-1.250503236, 36.856905],[-1.250560576, 36.856903]
+		],
+		"NTC_Admin Block": [
+
+        [-1.250560576, 36.856903],[-1.250503236, 36.856905],[-1.25049501, 36.85690142],[-1.25026953, 36.85693328],[-1.250070647, 36.85695639]
+		],
+"Parking Lot-NTC":[	
+		[-1.249863099, 36.85695762],[-1.249890762, 36.85694738],[-1.249902576, 36.85694516],[-1.249953074, 36.85698886],[-1.25000222, 36.85698632],
+		[-1.250050032, 36.85694546],[-1.250070647, 36.85695639],[-1.25026953, 36.85693328],[-1.25049501, 36.85690142],[-1.250503236, 36.856905],[-1.250560576, 36.856903]
+		],
+		"NTC-Parking Lot": [
+		[-1.250560576, 36.856903],[-1.250503236, 36.856905],[-1.25049501, 36.85690142],[-1.25026953, 36.85693328],[-1.250070647, 36.85695639],
+        [-1.250050032, 36.85694546],[-1.25000222, 36.85698632],[-1.249953074, 36.85698886],[-1.249902576, 36.85694516],[-1.249890762, 36.85694738],[-1.249863099, 36.85695762]
+		],
+"Parking Lot-L_Block":[	
+		[-1.249863099, 36.85695762],
+		[-1.249890762, 36.85694738],
+		[-1.249902576, 36.85694516],
+		[-1.249953074, 36.85698886],
+		[-1.25000222, 36.85698632],
+		[-1.250050032, 36.85694546],
+		[-1.250070647, 36.85695639],
+		[-1.25026953, 36.85693328],
+		[-1.25049501, 36.85690142],
+		[-1.250492368, 36.8568518],
+		[-1.250485282, 36.85680121],
+		[-1.250440947, 36.85678385],
+		[-1.250422938, 36.85665562],
+		[-1.250395398, 36.85644137],
+		[-1.250381372, 36.85632406],
+		[-1.250378564, 36.85623129],
+		[-1.250504419, 36.85621207]
+		],
+		"L_Block-Parking Lot": [
+		[-1.250504419, 36.85621207],
+[-1.250378564, 36.85623129],
+[-1.250381372, 36.85632406],
+[-1.250395398, 36.85644137],
+[-1.250422938, 36.85665562],
+[-1.250440947, 36.85678385],
+[-1.250485282, 36.85680121],
+[-1.250492368, 36.8568518],
+[-1.25049501, 36.85690142],
+[-1.25026953, 36.85693328],
+[-1.250070647, 36.85695639],
+[-1.250050032, 36.85694546],
+[-1.25000222, 36.85698632],
+[-1.249953074, 36.85698886],
+[-1.249902576, 36.85694516],
+[-1.249890762, 36.85694738],
+[-1.249863099, 36.85695762]
+		],
+"Parking Lot-Ablution Block":[	
+		[-1.249863099, 36.85695762],[-1.249890762, 36.85694738],[-1.249891552, 36.85693745],
+		[-1.249776225, 36.85685613],[-1.249726837, 36.85693672]
+		],
+		"Ablution Block-Parking Lot": [
+		[-1.249726837, 36.85693672],[-1.249776225, 36.85685613],[-1.249891552, 36.85693745],
+        [-1.249890762, 36.85694738],[-1.249863099, 36.85695762]
+		],
+"Parking Lot-Mosque":[	
+		[-1.249863099, 36.85695762],[-1.249890762, 36.85694738],[-1.249891552, 36.85693745],[-1.249776225, 36.85685613],
+		[-1.249726837, 36.85693672],[-1.249713809, 36.85693076],[-1.249640065, 36.85687018]
+		],
+		"Mosque-Parking Lot": [
+		[-1.249640065, 36.85687018],[-1.249713809, 36.85693076],[-1.249726837, 36.85693672],[-1.249776225, 36.85685613],[-1.249891552, 36.85693745],
+        [-1.249890762, 36.85694738],[-1.249863099, 36.85695762]
+		],
+"Parking Lot-Female Hostel":[	
+		[-1.249863099, 36.85695762],[-1.249890762, 36.85694738],[-1.249891552, 36.85693745],[-1.249776225, 36.85685613],[-1.249769608, 36.85684745],
+		[-1.24960593, 36.85672391],[-1.249521105, 36.85665994],[-1.249519876, 36.85658809],[-1.249521106, 36.85647466]
+		],
+		"Female Hostel-Parking Lot": [
+		[-1.249521106, 36.85647466],[-1.249519876, 36.85658809],[-1.249521105, 36.85665994],[-1.24960593, 36.85672391],[-1.249769608, 36.85684745],
+        [-1.249776225, 36.85685613],[-1.249891552, 36.85693745],[-1.249890762, 36.85694738],[-1.249863099, 36.85695762]
+		],
+"Parking Lot-Male Hostel":[
+		[-1.249863099, 36.85695762],
+		[-1.249890762, 36.85694738],
+		[-1.249891552, 36.85693745],
+		[-1.249910941, 36.85693842],
+		[-1.249887836, 36.85683159],
+		[-1.249894574, 36.85677222],
+		[-1.249897584, 36.85675615],
+		[-1.249888974, 36.85670142],
+		[-1.24986271, 36.85666085],
+		[-1.24984356, 36.85664171],
+		[-1.249805607, 36.85662696],
+		[-1.249802088, 36.85661535],
+		[-1.249783493, 36.85657735],
+		[-1.249772363, 36.85654784],
+		[-1.249753743, 36.85649033],
+		[-1.249735364, 36.85645211],
+		[-1.249729983, 36.85644257]
+		],
+		"Male Hostel-Parking Lot": [
+		[-1.249729983, 36.85644257],[-1.249735364, 36.85645211],[-1.249753743, 36.85649033],[-1.249772363, 36.85654784],[-1.249783493, 36.85657735],
+        [-1.249802088, 36.85661535],[-1.249805607, 36.85662696],[-1.24984356, 36.85664171],[-1.24986271, 36.85666085],[-1.249888974, 36.85670142],
+        [-1.249897584, 36.85675615],[-1.249894574, 36.85677222],[-1.249887836, 36.85683159],[-1.249910941, 36.85693842],[-1.249891552, 36.85693745],
+        [-1.249890762, 36.85694738],[-1.249863099, 36.85695762]
+		],
+"Cafeteria-Male Hostel":[
+		[-1.249805607, 36.85662696],[-1.249802088, 36.85661535],[-1.249783493, 36.85657735],[-1.249772363, 36.85654784],
+		[-1.249753743, 36.85649033],[-1.249735364, 36.85645211],[-1.249729983, 36.85644257]
+		],
+		"Male Hostel-Cafeteria": [
+		[-1.249729983, 36.85644257],[-1.249735364, 36.85645211],[-1.249753743, 36.85649033],[-1.249772363, 36.85654784],
+        [-1.249783493, 36.85657735],[-1.249802088, 36.85661535],[-1.249805607, 36.85662696]
+		],
+"Cafeteria-Female Hostel":[	
+		[-1.249805607, 36.85662696],[-1.249802088, 36.85661535],[-1.249783493, 36.85657735],[-1.249772363, 36.85654784],[-1.249753743, 36.85649033],
+		[-1.249735364, 36.85645211],[-1.249729983, 36.85644257],[-1.249720337, 36.85642798],[-1.249670355, 36.85644595],[-1.249588307, 36.85645246],[-1.249538482, 36.85646253]
+		],
+		"Female Hostel-Cafeteria": [
+		[-1.249538482, 36.85646253],[-1.249588307, 36.85645246],[-1.249670355, 36.85644595],[-1.249720337, 36.85642798],[-1.249729983, 36.85644257],
+        [-1.249735364, 36.85645211],[-1.249753743, 36.85649033],[-1.249772363, 36.85654784],[-1.249783493, 36.85657735],[-1.249802088, 36.85661535],[-1.249805607, 36.85662696]
+		],
+"L_Block-Cafeteria":[	
+		[-1.250499737, 36.8562035],
+		[-1.250349812, 36.85621384],
+		[-1.250206963, 36.85622776],
+		[-1.250132633, 36.85623657],
+		[-1.250120382, 36.85623587],
+		[-1.250028345, 36.85624275],
+		[-1.249948041, 36.85625915],
+		[-1.249942432, 36.85626056],
+		[-1.249884661, 36.85626456],
+		[-1.249836819, 36.85626356],
+		[-1.249795547, 36.8562624],
+		[-1.249787151, 36.8562626],
+		[-1.249785069, 36.8562964],
+		[-1.24979256, 36.856344],
+		[-1.249796527, 36.85637184],
+		[-1.249797531, 36.85638963],
+		[-1.249798149, 36.8563953],
+		[-1.249799921, 36.85641442],
+		[-1.249801411, 36.85641861],
+		[-1.249786451, 36.85643121],
+		[-1.249752377, 36.85643009],
+		[-1.249729983, 36.85644257],
+		[-1.249735364, 36.85645211],
+		[-1.249753743, 36.85649033],
+		[-1.249772363, 36.85654784],
+		[-1.249783493, 36.85657735],
+		[-1.249802088, 36.85661535],
+		[-1.249805607, 36.85662696]
+		],
+		"Cafeteria-L_Block": [
+		[-1.249805607, 36.85662696],[-1.249802088, 36.85661535],[-1.249783493, 36.85657735],[-1.249772363, 36.85654784],[-1.249753743, 36.85649033],
+        [-1.249735364, 36.85645211],[-1.249729983, 36.85644257],[-1.249752377, 36.85643009],[-1.249786451, 36.85643121],[-1.249801411, 36.85641861],
+        [-1.249799921, 36.85641442],[-1.249798149, 36.8563953],[-1.249797531, 36.85638963],[-1.249796527, 36.85637184],[-1.24979256, 36.856344],
+        [-1.249785069, 36.8562964],[-1.249787151, 36.8562626],[-1.249795547, 36.8562624],[-1.249836819, 36.85626356],[-1.249884661, 36.85626456],
+        [-1.249942432, 36.85626056],[-1.249948041, 36.85625915],[-1.250028345, 36.85624275],[-1.250132633, 36.85623657],[-1.250206963, 36.85622776],
+        [-1.250349812, 36.85621384],[-1.250499737, 36.8562035]
+
+		],
+"Library-Cafeteria":[	
+		[-1.250485282, 36.85680121],[-1.250492368, 36.8568518],[-1.25049501, 36.85690142],[-1.25026953, 36.85693328],
+		[-1.250070647, 36.85695639],[-1.250050032, 36.85694546],[-1.25000222, 36.85698632],[-1.249953074, 36.85698886],[-1.249902576, 36.85694516],[-1.249910941, 36.85693842],[-1.249887836, 36.85683159],
+		[-1.249894574, 36.85677222],[-1.249897584, 36.85675615],[-1.249888974, 36.85670142],[-1.24986271, 36.85666085],[-1.24984356, 36.85664171],[-1.249805607, 36.85662696]
+		],
+		"Cafeteria-Library": [
+		[-1.249805607, 36.85662696],[-1.24984356, 36.85664171],[-1.24986271, 36.85666085],[-1.249888974, 36.85670142],[-1.249897584, 36.85675615],[-1.249894574, 36.85677222],[-1.249887836, 36.85683159],[-1.249910941, 36.85693842],[-1.249902576, 36.85694516],
+[-1.249953074, 36.85698886],[-1.25000222, 36.85698632],[-1.250050032, 36.85694546],[-1.250070647, 36.85695639],[-1.25026953, 36.85693328],[-1.25049501, 36.85690142],[-1.250492368, 36.8568518],[-1.250485282, 36.85680121]
+
+		],
+"Tuition Block-Cafeteria":[
+		[-1.249926771, 36.85641526],[-1.249885157, 36.85641848],[-1.249834315, 36.85642206],[-1.249786451, 36.85643121],[-1.249752377, 36.85643009],[-1.249729983, 36.85644257],[-1.249735364, 36.85645211],[-1.249753743, 36.85649033],[-1.249772363, 36.85654784],[-1.249783493, 36.85657735],[-1.249802088, 36.85661535],[-1.249805607, 36.85662696]
+		],
+		"Cafeteria-Tuition Block": [
+		[-1.249805607, 36.85662696],[-1.249802088, 36.85661535],[-1.249783493, 36.85657735],[-1.249772363, 36.85654784],[-1.249753743, 36.85649033],
+		[-1.249735364, 36.85645211],[-1.249729983, 36.85644257],[-1.249752377, 36.85643009],[-1.249786451, 36.85643121],[-1.249834315, 36.85642206],
+		[-1.249885157, 36.85641848],[-1.249926771, 36.85641526],
+		]
+		
+	
+        		
+        // ADD MORE ROUTES HERE
+    };
+
+    function simulateRoute() {
+            const start = document.getElementById('start-destination').value;
+            const end = document.getElementById('end-destination').value;
+            const routeKey = `${start}-${end}`;
+
+            if (routes[routeKey]) {
+                if (routeLayer) map.removeLayer(routeLayer);
+                routeLayer = L.polyline(routes[routeKey], { color: 'blue', weight: 5 }).addTo(map);
+                map.fitBounds(routeLayer.getBounds());
+
+                // Animate Marker
+                animateMarker(routes[routeKey]);
+
+                // Calculate Estimated Distance & Time
+                totalDistance = calculateDistance(routes[routeKey]);
+                document.getElementById("total-distance").innerText = totalDistance + " m";
+                document.getElementById("estimated-time").innerText = Math.round(totalDistance / 80) + " min";
+
+                // Display Turn-by-Turn Directions
+                displayDirections(routes[routeKey]);
+            }
+        }
+
+        function animateMarker(route) {
+            if (movingMarker) map.removeLayer(movingMarker);
+            let index = 0;
+
+            movingMarker = L.marker(route[0], {icon: L.icon({iconUrl: 'flag.png', iconSize: [20, 20]})}).addTo(map);
+            function move() {
+                if (index < route.length - 1) {
+                    const [start, end] = [route[index], route[index + 1]];
+                    const steps = 50, intervalTime = 50;
+                    let step = 0;
+                    const interval = setInterval(() => {
+                        let lat = start[0] + ((end[0] - start[0]) / steps) * step;
+                        let lng = start[1] + ((end[1] - start[1]) / steps) * step;
+                        movingMarker.setLatLng([lat, lng]);
+                        step++;
+                        if (step > steps) {
+                            clearInterval(interval);
+                            index++;
+                            move();
+                        }
+                    }, intervalTime);
+                }
+            }
+            move();
+        }
+
+        function displayDirections(route) {
+            let directions = document.getElementById("directions-list");
+            directions.innerHTML = "";
+            document.getElementById("directions-panel").classList.add("show");
+
+            for (let i = 0; i < route.length - 1; i++) {
+                let step = document.createElement("div");
+                step.className = "direction-step";
+                step.innerHTML = `Step ${i + 1}: <span>Walk straight ${Math.round(calculateDistance([route[i], route[i + 1]]))}m</span>`;
+                directions.appendChild(step);
+            }
+        }
+
+        function calculateDistance(points) {
+            let total = 0;
+            for (let i = 0; i < points.length - 1; i++) {
+                total += map.distance(points[i], points[i + 1]);
+            }
+            return Math.round(total);
+        }
+
+        function resetMap() {
+            if (routeLayer) map.removeLayer(routeLayer);
+            if (movingMarker) map.removeLayer(movingMarker);
+            document.getElementById("directions-panel").classList.remove("show");
+        }
+
+        function getMyLocation() {
+            navigator.geolocation.getCurrentPosition(pos => {
+                L.marker([pos.coords.latitude, pos.coords.longitude]).addTo(map).bindPopup("You are here!").openPopup();
+                map.setView([pos.coords.latitude, pos.coords.longitude], 18);
+            });
+        }
+    </script>
+
+</body>
+</html>
