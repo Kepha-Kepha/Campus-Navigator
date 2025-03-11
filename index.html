@@ -5,20 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Campus Navigation</title>
     <link rel="icon" href="location3.png" type="image/x-icon">
-	<link rel="manifest" href="manifest.json">
-    
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap" async defer></script>
 
     <style>
-        /* General page styling */
         body {
             font-family: Arial, sans-serif;
             background-color: #f8f9fa;
-            background-image: url('bg14.jpg'); /* Background image */
+            background-image: url('images/bg15.jpg');
             background-size: cover;
             background-repeat: no-repeat;
             background-attachment: fixed;
@@ -26,8 +21,54 @@
             margin: 0;
             padding: 0;
         }
+header {
+    height: 60vh; /* 60% of the viewport height */
+    min-height: 400px; /* Ensures a minimum height */
+    max-height: 700px; /* Ensures a maximum height for large screens */
+    padding: 100px 20px; /* Adds vertical and horizontal spacing */
+    background-size: cover; /* Ensures the image covers the header */
+    background-position: center; /* Keeps the focus on the center of the image */
+}
 
-        /* Style for destination cards */
+header {
+    height: 50vh; /* Default for most screens */
+}
+@media (max-width: 768px) { /* For tablets and smaller */
+    header {
+        height: 40vh; 
+    }
+}
+@media (max-width: 480px) { /* For mobile screens */
+    header {
+        height: 30vh;
+    }
+}
+        #map-container { position: relative; height: 80vh; }
+        #map { width: 100%; height: 100%; }
+        #directions-panel {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 320px;
+            background: rgba(255, 255, 255, 0.85);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            display: none;
+        }
+        #directions-panel.show { display: block; }
+        #close-panel { float: right; cursor: pointer; font-size: 20px; font-weight: bold; color: red; }
+        .direction-step {
+            padding: 10px;
+            margin: 5px 0;
+            background: #e9ecef;
+            border-left: 5px solid #007bff;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .direction-step span { font-weight: bold; color: #007bff; }
+       /* Style for destination cards */
         .destination-card {
             transition: transform 0.3s, box-shadow 0.3s;
             height: 4%;
@@ -65,15 +106,21 @@
             font-weight: bold;
             
         }
-        #directions-panel {
-            width: 320px;
-            background: white;
-            padding: 15px;
-            overflow-y: auto;
-            display: none;
-            border-left: 3px solid #007bff;
-            transition: 0.3s;
-        }
+       #directions-panel {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 320px;
+  max-height: 40%;
+  overflow-y: auto;
+  background: rgba(255, 255, 255, 0.6); /* Lower the alpha value to increase transparency */
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  display: none;
+}
+
         #directions-panel.show {
             display: block;
         }
@@ -111,7 +158,9 @@
         }
         #loader img {
             width: 100px;
+            border-radius: 20px;
 		}
+
     </style>
 </head>
 <body onload="setTimeout(() => document.getElementById('loader').style.display='none', 2000)">
@@ -140,9 +189,26 @@
 </nav>
 
 <!-- Hero Section -->
-<header id="home" class="bg-primary text-white text-center py-5">
-    <h1>Welcome to the Campus Navigation System</h1>
-    <p>Find your way easily around campus with our offline navigation system.</p>
+<header id="home" class="text-white text-center py-5" style="position: relative; overflow: hidden;">
+    <!-- Background Image -->
+    <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: url('images/img1.png'); background-size: cover; background-position: center; z-index: 0; filter: brightness(0.7);"></div>
+
+    <!-- Main Content -->
+    <div class="container position-relative" style="z-index: 2;">
+        <h1 class="display-3 fw-bold" style="font-family: 'Lora', serif; text-transform: uppercase; letter-spacing: 3px; text-shadow: 2px 4px 6px rgba(0, 0, 0, 0.7); color: #FFD700;">
+            Navigate the Cosmos of Your Campus
+        </h1>
+        <p class="lead mt-3" style="font-size: 1.25rem; line-height: 1.8; font-family: 'Roboto', sans-serif; color: #f8f9fa; text-shadow: 1px 2px 4px rgba(0, 0, 0, 0.6);">
+            Explore every corner of your campus with ease and sophistication.
+        </p>
+        <a href="#navigation-map" class="btn btn-outline-light btn-lg mt-4 px-5 shadow" style="font-weight: bold; border: 2px solid #FFD700; border-radius: 30px; background: rgba(255, 255, 255, 0.1);">
+            Begin Your Journey
+        </a>
+    </div>
+
+    <!-- Subtle Glow and Star Animation -->
+    <div style="position: absolute; top: -50px; right: -50px; background: radial-gradient(circle, rgba(255, 223, 0, 0.8), transparent); width: 300px; height: 300px; border-radius: 50%; filter: blur(80px); z-index: 1;"></div>
+    <div style="position: absolute; bottom: -50px; left: -50px; background: radial-gradient(circle, rgba(255, 255, 255, 0.6), transparent); width: 200px; height: 200px; border-radius: 50%; filter: blur(60px); z-index: 1;"></div>
 </header>
 
 <!-- Gallery Section -->
@@ -152,11 +218,11 @@
         <!-- Destination Cards -->
         <div class="col-md-4 mb-4">
             <div class="card destination-card">
-                <img src="gate.jpg" class="card-img-top" alt="Gate">
+                <img src="images/gate.jpg" class="card-img-top" alt="Gate">
                 <div class="card-body">
                     <h5 class="card-title">Main Gate</h5>
                     <p class="card-text">The main entrance to the campus, welcoming students and visitors.</p>
-                    <a href="gate.jpg" class="btn btn-primary" target="_blank">View Image</a>
+                    <a href="images/gate.jpg" class="btn btn-primary" target="_blank">View Image</a>
                     <button class="btn btn-success" onclick="navigateToMap('Gate')">Navigate</button>
                 </div>
             </div>
@@ -164,11 +230,11 @@
 
 		<div class="col-md-4 mb-4">
             <div class="card destination-card">
-                <img src="Parking Lot.JPG" class="card-img-top" alt="Parking Lot">
+                <img src="images/Parking Lot.JPG" class="card-img-top" alt="Parking Lot">
                 <div class="card-body">
                     <h5 class="card-title">Parking Lot</h5>
                     <p class="card-text">Ample parking space for visitors and students.</p>
-                    <a href="Parking Lot.JPG" class="btn btn-primary" target="_blank">View Image</a>
+                    <a href="images/Parking Lot.JPG" class="btn btn-primary" target="_blank">View Image</a>
                     <button class="btn btn-success" onclick="navigateToMap('Parking Lot')">Navigate</button>
                 </div>
             </div>
@@ -176,11 +242,11 @@
 
 		<div class="col-md-4 mb-4">
             <div class="card destination-card">
-                <img src="Admin Block.JPG" class="card-img-top" alt="Admin Block">
+                <img src="images/Admin Block.JPG" class="card-img-top" alt="Admin Block">
                 <div class="card-body">
                     <h5 class="card-title">Admin Block</h5>
                     <p class="card-text">Ample parking space for visitors and students.</p>
-                    <a href="Admin Block.JPG" class="btn btn-primary" target="_blank">View Image</a>
+                    <a href="images/Admin Block.JPG" class="btn btn-primary" target="_blank">View Image</a>
                     <button class="btn btn-success" onclick="navigateToMap('Admin Block')">Navigate</button>
                 </div>
             </div>
@@ -188,11 +254,11 @@
 
 		<div class="col-md-4 mb-4">
             <div class="card destination-card">
-                <img src="Staffroom.JPG" class="card-img-top" alt="Staffroom">
+                <img src="images/Staffroom.JPG" class="card-img-top" alt="Staffroom">
                 <div class="card-body">
                     <h5 class="card-title">Staffroom</h5>
                     <p class="card-text">Lecturers' offices.</p>
-                    <a href="Staffroom.JPG" class="btn btn-primary" target="_blank">View Image</a>
+                    <a href="images/Staffroom.JPG" class="btn btn-primary" target="_blank">View Image</a>
                     <button class="btn btn-success" onclick="navigateToMap('Staffroom')">Navigate</button>
                 </div>
             </div>
@@ -200,11 +266,11 @@
 
 		<div class="col-md-4 mb-4">
             <div class="card destination-card">
-                <img src="Tuition Block.JPG" class="card-img-top" alt="Tuition Block">
+                <img src="images/Tuition Block.JPG" class="card-img-top" alt="Tuition Block">
                 <div class="card-body">
                     <h5 class="card-title">Tuition Block</h5>
                     <p class="card-text">Spacious and well furnished students classes.</p>
-                    <a href="Tuition Block.JPG" class="btn btn-primary" target="_blank">View Image</a>
+                    <a href="images/Tuition Block.JPG" class="btn btn-primary" target="_blank">View Image</a>
                     <button class="btn btn-success" onclick="navigateToMap('Tuition Block')">Navigate</button>
                 </div>
             </div>
@@ -212,11 +278,11 @@
 
 		<div class="col-md-4 mb-4">
             <div class="card destination-card">
-                <img src="Laboratories.JPG" class="card-img-top" alt="Laboratories">
+                <img src="images/Laboratories.JPG" class="card-img-top" alt="Laboratories">
                 <div class="card-body">
                     <h5 class="card-title">Laboratories</h5>
                     <p class="card-text">Well equiped Survey, Cartography, Photogrammetry and Remote Sensing Labs.</p>
-                    <a href="Laboratories.JPG" class="btn btn-primary" target="_blank">View Image</a>
+                    <a href="images/Laboratories.JPG" class="btn btn-primary" target="_blank">View Image</a>
                     <button class="btn btn-success" onclick="navigateToMap('Laboratories')">Navigate</button>
                 </div>
             </div>
@@ -224,11 +290,11 @@
 
 		<div class="col-md-4 mb-4">
             <div class="card destination-card">
-                <img src="Male Hostel.JPG" class="card-img-top" alt="Male Hostel">
+                <img src="images/Male Hostel.JPG" class="card-img-top" alt="Male Hostel">
                 <div class="card-body">
                     <h5 class="card-title">Male Hostel</h5>
                     <p class="card-text">Spacious, well furnished Male Hostels with WiFi connection.</p>
-                    <a href="Male Hostel.JPG" class="btn btn-primary" target="_blank">View Image</a>
+                    <a href="images/Male Hostel.JPG" class="btn btn-primary" target="_blank">View Image</a>
                     <button class="btn btn-success" onclick="navigateToMap('Male Hostel')">Navigate</button>
                 </div>
             </div>
@@ -236,11 +302,11 @@
 
 		<div class="col-md-4 mb-4">
             <div class="card destination-card">
-                <img src="Female Hostel.JPG" class="card-img-top" alt="Female Hostel">
+                <img src="images/Female Hostel.JPG" class="card-img-top" alt="Female Hostel">
                 <div class="card-body">
                     <h5 class="card-title">Female Hostel</h5>
                     <p class="card-text">Spacious, well furnished Female Hostels with WiFi connection.</p>
-                    <a href="Female Hostel.JPG" class="btn btn-primary" target="_blank">View Image</a>
+                    <a href="images/Female Hostel.JPG" class="btn btn-primary" target="_blank">View Image</a>
                     <button class="btn btn-success" onclick="navigateToMap('Female Hostel')">Navigate</button>
                 </div>
             </div>
@@ -248,11 +314,11 @@
 
 		<div class="col-md-4 mb-4">
             <div class="card destination-card">
-                <img src="Cafeteria.JPG" class="card-img-top" alt="Cafeteria">
+                <img src="images/Cafeteria.JPG" class="card-img-top" alt="Cafeteria">
                 <div class="card-body">
                     <h5 class="card-title">Cafeteria</h5>
                     <p class="card-text">Main Dining area for students serving a variety of Fresh Delicacies.</p>
-                    <a href="Cafeteria.JPG" class="btn btn-primary" target="_blank">View Image</a>
+                    <a href="images/Cafeteria.JPG" class="btn btn-primary" target="_blank">View Image</a>
                     <button class="btn btn-success" onclick="navigateToMap('Cafeteria')">Navigate</button>
                 </div>
             </div>
@@ -261,11 +327,11 @@
 		
 		<div class="col-md-4 mb-4">
             <div class="card destination-card">
-                <img src="Mosque.JPG" class="card-img-top" alt="Mosque">
+                <img src="images/Mosque.JPG" class="card-img-top" alt="Mosque">
                 <div class="card-body">
                     <h5 class="card-title">Mosque</h5>
                     <p class="card-text">Prayer Room for Muslim Students and Staff</p>
-                    <a href="Mosque.JPG" class="btn btn-primary" target="_blank">View Image</a>
+                    <a href="images/Mosque.JPG" class="btn btn-primary" target="_blank">View Image</a>
                     <button class="btn btn-success" onclick="navigateToMap('Mosque')">Navigate</button>
                 </div>
             </div>
@@ -273,11 +339,11 @@
 
 		<div class="col-md-4 mb-4">
             <div class="card destination-card">
-                <img src="Ablution Block.JPG" class="card-img-top" alt="Ablution Block">
+                <img src="images/Ablution Block.JPG" class="card-img-top" alt="Ablution Block">
                 <div class="card-body">
                     <h5 class="card-title">Ablution Block</h5>
                     <p class="card-text">Dedicated sparkling clean washrooms for visitors</p>
-                    <a href="Ablution Block.JPG" class="btn btn-primary" target="_blank">View Image</a>
+                    <a href="images/Ablution Block.JPG" class="btn btn-primary" target="_blank">View Image</a>
                     <button class="btn btn-success" onclick="navigateToMap('Ablution Block')">Navigate</button>
                 </div>
             </div>
@@ -285,11 +351,11 @@
 
 		<div class="col-md-4 mb-4">
             <div class="card destination-card">
-                <img src="L_Block.JPG" class="card-img-top" alt="L_Block">
+                <img src="images/L_Block.JPG" class="card-img-top" alt="L_Block">
                 <div class="card-body">
                     <h5 class="card-title">L_Block Block</h5>
                     <p class="card-text">Additional classroom area for students serving as a auditorium.</p>
-                    <a href="L_Block.JPG" class="btn btn-primary" target="_blank">View Image</a>
+                    <a href="images/L_Block.JPG" class="btn btn-primary" target="_blank">View Image</a>
                     <button class="btn btn-success" onclick="navigateToMap('L_Block')">Navigate</button>
                 </div>
             </div>
@@ -297,11 +363,11 @@
 
 		<div class="col-md-4 mb-4">
             <div class="card destination-card">
-                <img src="Library.JPG" class="card-img-top" alt="Library">
+                <img src="images/Library.JPG" class="card-img-top" alt="Library">
                 <div class="card-body">
                     <h5 class="card-title">Library</h5>
                     <p class="card-text">Information resource centre for students and staff well furnished with WiFi connectivity.</p>
-                    <a href="Library.JPG" class="btn btn-primary" target="_blank">View Image</a>
+                    <a href="images/Library.JPG" class="btn btn-primary" target="_blank">View Image</a>
                     <button class="btn btn-success" onclick="navigateToMap('Library')">Navigate</button>
                 </div>
             </div>
@@ -309,11 +375,11 @@
 
 		<div class="col-md-4 mb-4">
             <div class="card destination-card">
-                <img src="NTC.jpg" class="card-img-top" alt="NTC">
+                <img src="images/NTC.jpg" class="card-img-top" alt="NTC">
                 <div class="card-body">
                     <h5 class="card-title">NTC</h5>
                     <p class="card-text">The National Titling Center that serves the nationwide role of printing Lands Title Deeds.</p>
-                    <a href="NTC.jpg" class="btn btn-primary" target="_blank">View Image</a>
+                    <a href="images/NTC.jpg" class="btn btn-primary" target="_blank">View Image</a>
                     <button class="btn btn-success" onclick="navigateToMap('NTC')">Navigate</button>
                 </div>
             </div>
@@ -322,14 +388,14 @@
     </div>
 </div>
 
+
 <!-- Navigation Map Section -->
 <div class="container mt-5" id="navigation-map">
     <h2 class="text-center">Navigation Map</h2>
-
-    <!-- Dropdown for Start Destination -->
-    <div class="mb-3">
-        <label for="start-destination" class="form-label">Start Destination:</label>
-        <select class="form-select" id="start-destination">
+    <div class="row">
+        <div class="col-md-6">
+            <label for="start-destination" class="form-label">Start Destination:</label>
+            <select class="form-select" id="start-destination">
             <option value="Gate">Gate</option>
             <option value="Parking Lot">Parking Lot</option>
             <option value="Library">Library</option>
@@ -345,13 +411,13 @@
             <option value="L_Block">L_Block</option>
             <option value="Laboratories">Laboratories</option>
             <option value="Library">Library</option>
-        </select>
-    </div>
+            </select>
+        </div>
 
     <!-- Dropdown for End Destination -->
-    <div class="mb-3">
-        <label for="end-destination" class="form-label">End Destination:</label>
-        <select class="form-select" id="end-destination">
+        <div class="col-md-6">
+            <label for="end-destination" class="form-label">End Destination:</label>
+            <select class="form-select" id="end-destination">
             <option value="Gate">Gate</option>
             <option value="Parking Lot">Parking Lot</option>
             <option value="Admin Block">Admin Block</option>
@@ -366,30 +432,25 @@
             <option value="L_Block">L_Block</option>
             <option value="Laboratories">Laboratories</option>
             <option value="Library">Library</option>
-        </select>
+            </select>
+        </div>
+    </div>
+    <div class="d-flex justify-content-center mt-3">
+        <button class="btn btn-success me-2" onclick="simulateRoute()">Navigate</button>
+        <button class="btn btn-danger me-2" onclick="resetMap()">Reset</button>
+        <button class="btn btn-info" onclick="getMyLocation()">My Location</button>
     </div>
 
- <div class="d-flex justify-content-center mt-3">
-            <button class="btn btn-success me-2" onclick="simulateRoute()">Navigate</button>
-            <button class="btn btn-danger me-2" onclick="resetMap()">Reset</button>
-            <button class="btn btn-info" onclick="getMyLocation()">My Location</button>
-</div>
-    
 <!-- Map Container -->
-        <div id="map-container" class="mt-3">
-            <div id="map"></div>
-            <div id="directions-panel">
-                <h4>Turn-by-Turn Directions</h4>
-                <p><strong>Distance:</strong> <span id="total-distance">0m</span></p>
-                <p><strong>Estimated Time:</strong> <span id="estimated-time">0 min</span></p>
-                <div id="directions-list"></div>
-            </div>
-         </div>
-</div>
-
-    <div class="form-check mt-3">
-        <input class="form-check-input" type="checkbox" id="toggle-satellite" onclick="toggleSatelliteView()">
-        <label class="form-check-label" for="toggle-satellite">Satellite View</label>
+    <div id="map-container" class="mt-3">
+        <div id="map"></div>
+        <div id="directions-panel">
+            <span id="close-panel" onclick="closePanel()">×</span>
+            <h4>Turn-by-Turn Directions</h4>
+            <p><strong>Distance:</strong> <span id="total-distance">0m</span></p>
+            <p><strong>Estimated Time:</strong> <span id="estimated-time">0 min</span></p>
+            <div id="directions-list"></div>
+        </div>
     </div>
 </div>
 
@@ -398,42 +459,36 @@
     <p>&copy; 2025 Campus Navigation. All rights reserved.</p>
 </footer>
 
-<!-- JavaScript -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
 <script>
-    // Initialize the map
-    let map = L.map('map').setView([-1.249953957, 36.85741191], 18);
-    let routeLayer, movingMarker, totalDistance = 0;
+    
+    // Initialize the map and its view
+let map = L.map('map').setView([-1.249953957, 36.85741191], 18);
 
-    // Map Layers
-    const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-    const satelliteLayer = L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
-        subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-        maxZoom: 20
-    });
+const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors'
+}).addTo(map); // Default layer
 
-    // Toggle Satellite View
-    function toggleSatelliteView() {
-        if (document.getElementById("toggle-satellite").checked) {
-            map.removeLayer(streetLayer);
-            map.addLayer(satelliteLayer);
-        } else {
-            map.removeLayer(satelliteLayer);
-            map.addLayer(streetLayer);
-        }
-    }
+const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 19,
+    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+});
 
-    // Navigate to the map and pre-fill start destination
-    function navigateToMap(startLocation) {
-        document.getElementById("start-destination").value = startLocation;
-        document.getElementById("navigation-map").scrollIntoView({ behavior: 'smooth' });
-    }
+const baseMaps = {
+    "Street View": streetLayer,
+    "Satellite View": satelliteLayer
+};
 
-    // Define routes here (THIS IS WHERE YOU ADD MORE ROUTES)
-    const routes = {
-        "Gate-L_Block": [
+L.control.layers(baseMaps).addTo(map);
+
+let routeLayer;
+let movingMarker;
+
+// Define the routes between locations (your existing `routes` object)
+const routes = {
+    "Gate-L_Block": [
             [-1.249941085, 36.8573594], [-1.249915699, 36.85711636], [-1.249890762, 36.85694738],[-1.249902576, 36.85694516], [-1.249953074, 36.85698886], [-1.25000222, 36.85698632],
             [-1.250050032, 36.85694546], [-1.250070647, 36.85695639], [-1.25026953, 36.85693328],[-1.25049501, 36.85690142], [-1.250440947, 36.85678385], [-1.250422938, 36.85665562], [-1.250395398, 36.85644137], [-1.250381372, 36.85632406], [-1.250378564, 36.85623129],
             [-1.250504419, 36.85621207]
@@ -843,91 +898,213 @@
 	
         		
         // ADD MORE ROUTES HERE
-    };
+};
 
-    function simulateRoute() {
-            const start = document.getElementById('start-destination').value;
-            const end = document.getElementById('end-destination').value;
-            const routeKey = `${start}-${end}`;
+// Calculate the bearing (direction) between two points
+function getBearing(lat1, lon1, lat2, lon2) {
+    const toRadians = (degree) => degree * (Math.PI / 180);
+    const toDegrees = (radian) => radian * (180 / Math.PI);
+    const dLon = toRadians(lon2 - lon1);
+    const y = Math.sin(dLon) * Math.cos(toRadians(lat2));
+    const x = Math.cos(toRadians(lat1)) * Math.sin(toRadians(lat2)) - Math.sin(toRadians(lat1)) * Math.cos(toRadians(lat2)) * Math.cos(dLon);
+    let bearing = toDegrees(Math.atan2(y, x));
+    return (bearing + 360) % 360; // Normalize to 0-360 degrees
+}
 
-            if (routes[routeKey]) {
-                if (routeLayer) map.removeLayer(routeLayer);
-                routeLayer = L.polyline(routes[routeKey], { color: 'blue', weight: 5 }).addTo(map);
-                map.fitBounds(routeLayer.getBounds());
+// Translate bearing into a readable direction
+function getDirection(bearing) {
+    if (bearing >= 337.5 || bearing < 22.5) return 'North';
+    if (bearing >= 22.5 && bearing < 67.5) return 'Northeast';
+    if (bearing >= 67.5 && bearing < 112.5) return 'East';
+    if (bearing >= 112.5 && bearing < 157.5) return 'Southeast';
+    if (bearing >= 157.5 && bearing < 202.5) return 'South';
+    if (bearing >= 202.5 && bearing < 247.5) return 'Southwest';
+    if (bearing >= 247.5 && bearing < 292.5) return 'West';
+    if (bearing >= 292.5 && bearing < 337.5) return 'Northwest';
+}
 
-                // Animate Marker
-                animateMarker(routes[routeKey]);
+// Simulate a route between the selected start and end destinations
+function simulateRoute() {
+    const start = document.getElementById('start-destination').value;
+    const end = document.getElementById('end-destination').value;
+    const routeKey = `${start}-${end}`;
 
-                // Calculate Estimated Distance & Time
-                totalDistance = calculateDistance(routes[routeKey]);
-                document.getElementById("total-distance").innerText = totalDistance + " m";
-                document.getElementById("estimated-time").innerText = Math.round(totalDistance / 80) + " min";
+    if (routes[routeKey]) {
+        if (routeLayer) map.removeLayer(routeLayer); // Remove existing route
+        routeLayer = L.polyline(routes[routeKey], { color: 'blue', weight: 5 }).addTo(map);
+        map.fitBounds(routeLayer.getBounds());
+        animateMarker(routes[routeKey]);
 
-                // Display Turn-by-Turn Directions
-                displayDirections(routes[routeKey]);
-            }
+        document.getElementById("directions-panel").classList.add("show");
+        const directionsList = document.getElementById("directions-list");
+        directionsList.innerHTML = ""; // Clear existing directions
+
+        let totalDistance = 0;
+        for (let i = 0; i < routes[routeKey].length - 1; i++) {
+            const distance = Math.round(map.distance(routes[routeKey][i], routes[routeKey][i + 1]));
+            totalDistance += distance; // Sum up the distances
+            const bearing = getBearing(routes[routeKey][i][0], routes[routeKey][i][1], routes[routeKey][i + 1][0], routes[routeKey][i + 1][1]);
+            const direction = getDirection(bearing);
+
+            // Add turn-by-turn step
+            const step = document.createElement("div");
+            step.className = "direction-step";
+            step.innerHTML = `Step ${i + 1}: <span>${direction} ${distance}m</span>`;
+            directionsList.appendChild(step);
         }
 
-        function animateMarker(route) {
-            if (movingMarker) map.removeLayer(movingMarker);
-            let index = 0;
+        // Display total distance
+        document.getElementById("total-distance").textContent = `${totalDistance}m`;
 
-            movingMarker = L.marker(route[0], {icon: L.icon({iconUrl: 'flag.png', iconSize: [20, 20]})}).addTo(map);
-            function move() {
-                if (index < route.length - 1) {
-                    const [start, end] = [route[index], route[index + 1]];
-                    const steps = 50, intervalTime = 50;
-                    let step = 0;
-                    const interval = setInterval(() => {
-                        let lat = start[0] + ((end[0] - start[0]) / steps) * step;
-                        let lng = start[1] + ((end[1] - start[1]) / steps) * step;
-                        movingMarker.setLatLng([lat, lng]);
-                        step++;
-                        if (step > steps) {
-                            clearInterval(interval);
-                            index++;
-                            move();
-                        }
-                    }, intervalTime);
+        // Calculate and display estimated time
+        const walkingSpeed = 1.4; // Average walking speed in m/s
+        const estimatedTime = Math.round(totalDistance / walkingSpeed / 60); // Convert to minutes
+        document.getElementById("estimated-time").textContent = `${estimatedTime} min`;
+    } else {
+        alert("No route found for the selected destinations.");
+    }
+}
+
+// Animate the marker along the route
+function animateMarker(route) {
+    if (movingMarker) map.removeLayer(movingMarker); // Remove existing marker
+    movingMarker = L.marker(route[0], {
+        icon: L.icon({
+            iconUrl: 'flag.png', // Ensure this file exists
+            iconSize: [20, 20]
+        })
+    }).addTo(map);
+
+    // Reset index for new route animation
+    index = 0;
+
+    function move() {
+        if (index < route.length - 1) {
+            const start = route[index];
+            const end = route[index + 1];
+            const steps = 50; // Number of animation steps
+            const intervalTime = 50; // Time between steps (ms)
+            let step = 0;
+
+            const interval = setInterval(() => {
+                const lat = start[0] + ((end[0] - start[0]) / steps) * step;
+                const lng = start[1] + ((end[1] - start[1]) / steps) * step;
+                movingMarker.setLatLng([lat, lng]); // Update marker position
+                step++;
+
+                if (step > steps) {
+                    clearInterval(interval);
+                    index++;
+                    move(); // Move to the next segment
                 }
-            }
-            move();
+            }, intervalTime);
         }
+    }
+    move(); // Start the animation
+}
+// Close the directions panel
+function closePanel() {
+    document.getElementById("directions-panel").classList.remove("show");
+}
 
-        function displayDirections(route) {
-            let directions = document.getElementById("directions-list");
-            directions.innerHTML = "";
-            document.getElementById("directions-panel").classList.add("show");
+// Reset the map to its initial state
+function resetMap() {
+    if (routeLayer) map.removeLayer(routeLayer); // Remove the simulated path
+    document.getElementById("directions-list").innerHTML = "";
+    document.getElementById("total-distance").textContent = "0m";
+    document.getElementById("estimated-time").textContent = "0 min";
+    document.getElementById("directions-panel").classList.remove("show");
+    if (movingMarker) map.removeLayer(movingMarker); // Clear the animated marker
+    map.setView([-1.249953957, 36.85741191], 18); // Reset map view
+}
 
-            for (let i = 0; i < route.length - 1; i++) {
-                let step = document.createElement("div");
-                step.className = "direction-step";
-                step.innerHTML = `Step ${i + 1}: <span>Walk straight ${Math.round(calculateDistance([route[i], route[i + 1]]))}m</span>`;
-                directions.appendChild(step);
-            }
-        }
+// Get the user's current location with enhanced accuracy
+function getMyLocation() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
 
-        function calculateDistance(points) {
-            let total = 0;
-            for (let i = 0; i < points.length - 1; i++) {
-                total += map.distance(points[i], points[i + 1]);
-            }
-            return Math.round(total);
-        }
+        // Add a marker for the user's precise location
+        const userMarker = L.marker([latitude, longitude], {
+          title: "Your Location",
+        }).addTo(map)
+          .bindPopup("You are here!")
+          .openPopup();
 
-        function resetMap() {
-            if (routeLayer) map.removeLayer(routeLayer);
-            if (movingMarker) map.removeLayer(movingMarker);
-            document.getElementById("directions-panel").classList.remove("show");
-        }
+        // Set the map view to the user's location
+        map.setView([latitude, longitude], 18);
+      },
+      (error) => {
+        alert("Error retrieving your location. Please ensure GPS is enabled and try again.");
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 } // Request highest GPS accuracy
+    );
+  } else {
+    alert("Geolocation is not supported by your browser.");
+  }
+}
 
-        function getMyLocation() {
-            navigator.geolocation.getCurrentPosition(pos => {
-                L.marker([pos.coords.latitude, pos.coords.longitude]).addTo(map).bindPopup("You are here!").openPopup();
-                map.setView([pos.coords.latitude, pos.coords.longitude], 18);
-            });
-        }
-    </script>
 
+
+// Define destinations with coordinates and image paths
+const destinations = [
+    { name: "Gate", coords: [-1.249953957, 36.85741191], image: "images/Gate.jpg" },
+    { name: "Parking Lot", coords: [-1.24986075, 36.85696198], image: "images/Parking Lot.jpg" },
+    { name: "Ablution Block", coords: [-1.249719809, 36.85694335], image: "images/Ablution Block.jpg" },
+    { name: "Mosque", coords: [-1.249637086, 36.85687075], image: "images/Mosque.jpg" },
+    { name: "Cafeteria", coords: [-1.249817164, 36.85662969], image: "images/Cafeteria.jpg" },
+    { name: "Female Hostel", coords: [-1.249529475, 36.85645514], image: "images/Female Hostel.jpg" },
+    { name: "Male Hostel", coords: [-1.249759806, 36.85642746], image: "images/Male Hostel.jpg" },
+    { name: "Admin Block", coords: [-1.250066778, 36.85692924], image: "images/Admin Block.jpg" },
+    { name: "Staffroom", coords: [-1.249964333, 36.85670443], image: "images/Staffroom.jpg" },
+    { name: "Tuition Block", coords: [-1.249961835, 36.85640083], image: "images/Tuition Block.jpg" },
+    { name: "Laboratories", coords: [-1.250168635, 36.85639424], image: "images/Laboratories.jpg" },
+    { name: "L-Block", coords: [-1.250531897, 36.85622364], image: "images/L_Block.jpg" },
+    { name: "Library", coords: [-1.250487036, 36.856781], image: "images/Library.jpg" },
+    { name: "NTC", coords: [-1.250585589, 36.85690504], image: "images/NTC.jpg" }
+];
+
+
+function navigateToMap(destination) {
+    // Set the clicked destination as the "end" destination in the dropdown
+    document.getElementById('end-destination').value = destination;
+
+    // Set a default starting point, e.g., the Gate
+    document.getElementById('start-destination').value = "Gate"; 
+
+    // Simulate the route to the selected destination
+    simulateRoute();
+
+    // Scroll to the map section (optional but improves user experience)
+    document.getElementById('navigation-map').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Add markers to the map with image popups
+destinations.forEach(destination => {
+    const marker = L.marker(destination.coords).addTo(map);
+
+    const popupContent = `
+        <div style="text-align: center;">
+            <strong>${destination.name}</strong>
+            <img src="${destination.image}" alt="${destination.name}" style="width: 150px; height: auto; margin-top: 10px; border-radius: 10px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);">
+        </div>
+    `;
+
+    marker.bindPopup(popupContent);
+
+    // Show popup on hover
+    marker.on('mouseover', function () {
+        marker.openPopup();
+    });
+
+    // Hide popup when the mouse leaves
+    marker.on('mouseout', function () {
+        marker.closePopup();
+    });
+});
+
+
+</script>
 </body>
 </html>
