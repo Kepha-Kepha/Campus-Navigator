@@ -465,6 +465,20 @@ header {
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
+
+//service-worker
+    if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(registration => {
+        console.log('Service Worker registered with scope:', registration.scope);
+      })
+      .catch(error => {
+        console.error('Service Worker registration failed:', error);
+      });
+  });
+}
+
     
     // Initialize the map and its view
 let map = L.map('map').setView([-1.249953957, 36.85741191], 18);
@@ -483,6 +497,12 @@ const baseMaps = {
     "Street View": streetLayer,
     "Satellite View": satelliteLayer
 };
+
+const offlineTileLayer = L.tileLayer('tiles/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+  attribution: 'Map data © OpenStreetMap contributors'
+}).addTo(map);
+
 
 L.control.layers(baseMaps).addTo(map);
 
